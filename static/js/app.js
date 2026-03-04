@@ -194,12 +194,12 @@ function addHeaderRow(event) {
     const keyInput = document.createElement("input");
     keyInput.type = "text";
     keyInput.name = `header-key-${headerId}`;
-    keyInput.placeholder = "Header Name (e.g., Authorization)";
+    keyInput.placeholder = "Header (ex, Authorization)";
 
     const valueInput = document.createElement("input");
     valueInput.type = "text";
     valueInput.name = `header-value-${headerId}`;
-    valueInput.placeholder = "Header Value (e.g., Bearer token)";
+    valueInput.placeholder = "Header value (ex, Bearer token)";
 
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
