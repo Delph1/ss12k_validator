@@ -121,6 +121,8 @@ docker run -p 8000:8000 -v ${PWD}/scenarios.yaml:/app/scenarios.yaml ss12k-valid
 
 ### Via webbgränssnittet
 
+![SS12000 Validator - Webbgränssnittet](images/screenshot.png)
+
 1. Öppna `http://localhost:8000` i din webbläsare
 2. Välj fliken "Validera API"
 3. Ange API:s bas-URL (t.ex. `https://api.example.com`)
