@@ -78,6 +78,45 @@ python app.py
 
 Applikationen kommer att vara tillgänglig på `http://localhost:8000`
 
+## Installation med Docker
+
+### Förutsättningar
+
+- Docker
+- Docker Compose (rekommenderat)
+
+### Med Docker Compose (rekommenderat)
+
+```bash
+git clone https://github.com/Delph1/ss12k_validator.git
+cd ss12k_validator
+docker-compose up
+```
+
+Applikationen är sedan tillgänglig på `http://localhost:8000`
+
+För att stoppa applikationen:
+```bash
+docker-compose down
+```
+
+### Med Docker direkt
+
+Bygga Docker-image:
+```bash
+docker build -t ss12k-validator .
+```
+
+Köra containern:
+```bash
+docker run -p 8000:8000 -v $(pwd)/scenarios.yaml:/app/scenarios.yaml ss12k-validator
+```
+
+På Windows (PowerShell):
+```powershell
+docker run -p 8000:8000 -v ${PWD}/scenarios.yaml:/app/scenarios.yaml ss12k-validator
+```
+
 ## Användning
 
 ### Via webbgränssnittet

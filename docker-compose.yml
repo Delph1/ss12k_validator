@@ -1,0 +1,11 @@
+services:
+  validator:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./scenarios.yaml:/app/scenarios.yaml
+      - ./versions:/app/versions
+    environment:
+      - DEBUG=false
+    restart: unless-stopped
