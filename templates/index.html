@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SS12000 API-validator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #6b8e23 0%, #556b2f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="url"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #6b8e23;
+            box-shadow: 0 0 0 3px rgba(107, 142, 35, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] + label {
+            margin-bottom: 0;
+            font-weight: 400;
+        }
+
+        .checkbox-group + .form-group {
+            margin-top: -15px;
+        }
+
+        .limit-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .limit-input-group input {
+            width: 100px;
+        }
+
+        .form-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+        }
+
+        .form-section h2 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .headers-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .header-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .header-row input {
+            margin-bottom: 0;
+        }
+
+        .btn-remove-header {
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #666;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-remove-header:hover {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        .btn-add-header {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #6b8e23;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-add-header:hover {
+            background: #556b2f;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 35px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6b8e23 0%, #556b2f 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(107, 142, 35, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6b8e23;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #6b8e23;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results.success {
+            border-left-color: #51cf66;
+            background: #f1fdf5;
+        }
+
+        .results.error {
+            border-left-color: #ff6b6b;
+            background: #ffe3e3;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-status {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .result-status.pass {
+            color: #51cf66;
+        }
+
+        .result-status.fail {
+            color: #ff6b6b;
+        }
+
+        .scenario-result {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .scenario-result.pass {
+            border-left: 4px solid #51cf66;
+        }
+
+        .scenario-result.fail {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .scenario-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .step-result {
+            margin-left: 15px;
+            margin-top: 8px;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .step-result.pass {
+            color: #51cf66;
+        }
+
+        .step-result.fail {
+            color: #ff6b6b;
+        }
+
+        .error-details {
+            margin-top: 8px;
+            padding: 8px;
+            background: #ffe3e3;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #c92a2a;
+            font-family: "Monaco", "Courier New", monospace;
+        }
+
+        .btn-download-cert {
+            background: #51cf66;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .btn-download-cert:hover {
+            background: #40c057;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #ffe3e3;
+            color: #c92a2a;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .alert-success {
+            background: #f1fdf5;
+            color: #2f9e44;
+            border-left: 4px solid #51cf66;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tab-button.active {
+            color: #6b8e23;
+            border-bottom-color: #6b8e23;
+        }
+
+        .tab-button:hover {
+            color: #333;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            padding: 40px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-wrapper:hover {
+            border-color: #6b8e23;
+            background: #f1faf0;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .file-input-wrapper p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .file-input-wrapper .drag-text {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .verification-result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .verification-result.show {
+            display: block;
+        }
+
+        .verification-result.valid {
+            background: #f1fdf5;
+            border: 1px solid #b3e5b3;
+        }
+
+        .verification-result.invalid {
+            background: #ffe3e3;
+            border: 1px solid #ffa8a8;
+        }
+
+        .verification-result h3 {
+            margin-top: 0;
+            font-size: 16px;
+        }
+
+        .verification-result.valid h3 {
+            color: #51cf66;
+        }
+
+        .verification-result.invalid h3 {
+            color: #ff6b6b;
+        }
+
+        .verification-details {
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .verification-details div {
+            margin-bottom: 8px;
+        }
+
+        .verification-details strong {
+            color: #333;
+            display: inline-block;
+            width: 140px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header-row {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SS12000 API-validator</h1>
+        <p class="subtitle">Validera din SS12000 API-överensstämmelse och hämta ett efterlevnadscertifikat</p>
+
+        <!-- Tabs for Certificate Verification and Validation -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('validate', this)">Validera API</button>
+            <button class="tab-button" onclick="switchTab('verify', this)">Verifiera certifikat</button>
+        </div>
+
+        <!-- Tab: Verify Certificate -->
+        <div id="verify" class="tab-content">
+            <div class="form-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+                <h2>Ladda upp och verifiera certifikat</h2>
+                <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Ladda upp ett efterlevnadscertifikat för att verifiera dess äkthet och se dess detaljer.</p>
+                
+                <div class="file-input-wrapper" id="fileInputWrapper" onclick="document.getElementById('certificateFile').click()">
+                    <p class="drag-text">📄 Klicka för att välja eller dra och släpp</p>
+                    <p>Certifikatfil</p>
+                    <input type="file" id="certificateFile" accept=".json" onchange="handleCertificateFileSelect(event)">
+                </div>
+
+                <button type="button" class="btn btn-primary" id="verifyBtn" style="margin-top: 20px; display: none;" onclick="verifyCertificate()">Verifiera certifikat</button>
+                <button type="button" class="btn btn-secondary" style="margin-top: 20px; margin-left: 10px; display: none;" id="clearCertBtn" onclick="clearCertificateFile()">Rensa</button>
+
+                <div class="verification-result" id="verificationResult"></div>
+            </div>
+        </div>
+
+        <!-- Tab: Validate API -->
+        <div id="validate" class="tab-content active">
+        <form id="validationForm">
+            <!-- API URL -->
+            <div class="form-group">
+                <label for="apiUrl">API bas-URL *</label>
+                <input type="url" id="apiUrl" name="apiUrl" placeholder="https://api.example.com" required>
+            </div>
+
+            <!-- Version Selection -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="version">SS12000-version *</label>
+                    <select id="version" name="version" required>
+                        <option value="2022">2022</option>
+                        <option value="2020">2020</option>
+                    </select>
+                </div>
+
+                <!-- Scenarios -->
+                <div class="form-group">
+                    <label for="scenarios">Scenarier *</label>
+                    <select id="scenarios" name="scenarios" multiple required>
+                        <!-- Populated by JavaScript -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Headers Section -->
+            <div class="form-section">
+                <h2>Huvuden (Valfritt)</h2>
+                <div class="headers-container" id="headersContainer">
+                    <!-- Headers will be added here dynamically -->
+                </div>
+                <button type="button" class="btn-add-header" id="addHeaderBtn">+ Lägg till huvud</button>
+            </div>
+
+            <!-- Limit Section -->
+            <div class="form-section">
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableLimit" name="enableLimit">
+                        <label for="enableLimit">Ställ in sidgräns</label>
+                    </div>
+                </div>
+                <div class="form-group limit-input-group" id="limitGroup" style="display: none;">
+                    <label for="limitValue">Gräns (1-50):</label>
+                    <input type="number" id="limitValue" name="limitValue" min="1" max="50" value="10">
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary" id="submitBtn">Starta validering</button>
+                <button type="reset" class="btn btn-secondary">Rensa formulär</button>
+            </div>
+        </form>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Kör valideringsscenarier...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results" id="results">
+            <div id="resultsContent"></div>
+        </div>        </div>    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

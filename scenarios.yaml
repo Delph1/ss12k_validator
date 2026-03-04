@@ -1,0 +1,670 @@
+# SS12000 API Validation Scenarios
+# 
+# This file defines the test scenarios that will be executed against your API.
+# 
+# Scenario Structure:
+# - Each scenario has an id, name, description, and ordered list of steps
+# - Each step makes an HTTP request, validates the response, and can extract data for later steps
+# - Extracted data can be substituted into subsequent endpoint URLs using {variable_name} placeholders
+#
+# Example scenario structure:
+
+scenarios:
+  # Scenario ID (used internally and in URLs)
+  c1:
+    name: "C.1 Grundläggande personinformation"
+    description: "Den grundläggande information innehåller uppgifter såsom namn, personnummer och kontaktuppifter. Organisationen kan vara en huvudman, en skola, en skolenhet eller annan nivå av organisation."
+    
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+        extractData:
+          first_person_id: "data[0].id"
+
+  c2:
+    name: "C.2 Underlag för personers roller och behörighet"
+    description: "Scenariot handlar om att tilldela behörighet för persongrupper i det mottagande systemet."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch duties 
+      - name: "Fetch duties"
+        method: GET
+        endpoint: "/duties?organisation={organisation_id}"
+        expectedSchema: Duty
+      # Step 4: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?owner={organisation_id}"
+        expectedSchema: Group
+      # Step 4: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c3:
+    name: "C.3 Underlag för tjänstefördelning"
+    description: "Registrering av tjänstefördelning använder information om skeolenhetens lärare (Duty), elevergrupper (StudentGroup) och utbud av ämnen och kurser (Syllabus)."
+  
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch duties 
+      - name: "Fetch duties"
+        method: GET
+        endpoint: "/duties?organisation={organisation_id}"
+        expectedSchema: Duty
+      # Step 4: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?owner={organisation_id}"
+        expectedSchema: Group
+      # Step 5: Fetch syllabuses
+      - name: "Fetch syllabuses"
+        method: GET
+        endpoint: "/syllabuses"
+        expectedSchema: Syllabus
+      # Step 6: Fetch schoolUnitOfferings
+      - name: "Fetch school unit offerings"
+        method: GET
+        endpoint: "/schoolUnitOfferings?offeredAt={organisation_id}"
+        expectedSchema: SchoolUnitOfferings
+      # Step 7: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c4:
+    name: "C.4 Information om tjänstefördelning och lärares relation till elevgrupper"
+    description: "Scenariot syftar till att överföra information som skapas vid processen TJänstefördelning. I modellen används begreppet Aktivitet för att hantera lärares undervisning i klasser och undervisningsgrupper."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch duties 
+      - name: "Fetch duties"
+        method: GET
+        endpoint: "/duties?organisation={organisation_id}"
+        expectedSchema: Duty
+      # Step 4: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?owner={organisation_id}"
+        expectedSchema: Groups
+      # Step 5: Fetch syllabuses
+      - name: "Fetch syllabuses"
+        method: GET
+        endpoint: "/syllabuses"
+        expectedSchema: Syllabus
+      # Step 6: Fetch activities
+      - name: "Fetch activities"
+        method: GET
+        endpoint: "/activities?organisation={organisation_id}"
+        expectedSchema: Activity
+      # Step 7: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c5:
+    name: "C.5 Information om elevgrupper med koppling till ämne och årskurs"
+    description: "Scenariot syftar till att överföra information som skapas vid processen Tjänstefördelning. I modellen används begreppet Aktivitet för att hantera lärarares undervisning i klasser och undervisningsgrupper. För att kunna hantera information om ämne och årskurs används begreppet StudentGroup som kan kopplas till både Aktivitet och Syllabus."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch duties 
+      - name: "Fetch duties"
+        method: GET
+        endpoint: "/duties?organisation={organisation_id}"
+        expectedSchema: Duty
+      # Step 4: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?owner={organisation_id}"
+        expectedSchema: Group
+      # Step 5: Fetch syllabuses
+      - name: "Fetch syllabuses"
+        method: GET
+        endpoint: "/syllabuses"
+        expectedSchema: Syllabus
+      # Step 6: Fetch activities
+      - name: "Fetch activities"
+        method: GET
+        endpoint: "/activities?organisation={organisation_id}"
+        expectedSchema: Activity
+      # Step 7: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c6:
+    name: "C.6 Underlag för registrering av omdömen och betyg"
+    description: "Den information som finns i form av aktiviteter används som underlag för både betygsregistrering och inmatning av skriftliga omdömen."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch duties 
+      - name: "Fetch duties"
+        method: GET
+        endpoint: "/duties?organisation={organisation_id}"
+        expectedSchema: Duty
+      # Step 4: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?owner={organisation_id}"
+        expectedSchema: Group
+      # Step 5: Fetch syllabuses
+      - name: "Fetch syllabuses"
+        method: GET
+        endpoint: "/syllabuses"
+        expectedSchema: Syllabus
+      # Step 6: Fetch activities
+      - name: "Fetch activities"
+        method: GET
+        endpoint: "/activities?organisation={organisation_id}"
+        expectedSchema: Activity
+      # Step 7: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c7:
+    name: "C.7 Underlag för frånvaro på terminsbetyg"
+    description: "En elevs summerade frånvaro utan giltlig anledning överförs från ett system som hanterar närvaroregistrering till ett system som hanterar betygsutskrifter."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.entity.type=enrolment&relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch duties 
+      - name: "Fetch aggregated attendance"
+        method: GET
+        endpoint: "/aggregatedAttendance?organisation={organisation_id}"
+        expectedSchema: AggregatedAttendance
+
+  c8:
+    name: "C.8 Detaljerad närvaroinformation"
+    description: "Samtliga registreringar av närvaro och frånvaro för en elev överförs från ett system för närvarohantering."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.entity.type=enrolment&relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch calendar events
+      - name: "Fetch calendar events"
+        method: GET
+        endpoint: "/attendances?organisation={organisation_id}"
+        expectedSchema: Attendance
+      # Step 4: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c9:
+    name: "C.9 Schema för barnomsorg"
+    description: " Vårdnadshavare eller personal registrerar barnets närvaro via användargränssnitt i ett system. Överföring görs sedan till ett annan system där uppföljning av barnens närvaro sker."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.entity.type=placement.child&relationship.organisation={organisation_id}"
+        expectedSchema: Person
+        extractData:
+          first_person_id: "data[0].id"
+      # Step 3: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?organisation={organisation_id}"
+        expectedSchema: Group
+      # Step 4: Attendance schedule
+      - name: "Fetch attendance schedule"
+        method: GET
+        endpoint: "/attendancesScedule?placement={first_person_id}"
+        expectedSchema: AttendanceSchedule
+
+  c10:
+    name: "C.10 Checka in och ut barn samt registrera närvaro på lektion"
+    description: "Ett system för identifiering av personer som skickar information om tidpunkt för näravro till ett system som hanterar närvaro."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.entity.type=placement.child&relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?organisation={organisation_id}"
+        expectedSchema: Group
+      # Step 4: Fetch rooms
+      - name: "Fetch rooms"
+        method: GET
+        endpoint: "/rooms?organisation={organisation_id}"
+        expectedSchema: Room
+
+  c11:
+    name: "C.11 Anmäla ledighet eller frånvaro"
+    description: "Information om beviljad ledighet eller anmäld korttidsfrånvaro överförs från ett system för inmatning, och i förekommande fall beviljande, till ett system för näravarohantering."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch absence
+      - name: "Fetch absence"
+        method: GET
+        endpoint: "/absence"
+        expectedSchema: Absence
+
+  c12:
+    name: "C.12 Betyg överförs från registrering till lagringssystem"
+    description: "Undervisande lärare, eller en lärare med ämnesbehörighet, registrerar betyg för eleverna i sina undervisningsgrupper. Betygen förs sedan över förtill ett system där informationen lagras."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?owner={organisation_id}"
+        expectedSchema: Group
+      # Step 4: Fetch syllabuses
+      - name: "Fetch syllabuses"
+        method: GET
+        endpoint: "/syllabuses"
+        expectedSchema: Syllabus
+      # Step 5: Fetch grades
+      - name: "Fetch grades"
+        method: GET
+        endpoint: "/grades?organisation={organisation_id}&registeredDate.onOrAfter=2020-01-01&registeredDate.onOrBefore=2020-06-30"
+        expectedSchema: Grade
+
+  c13:
+    name: "C.13 Schematider i kalender som underlag för näravouppföljning"
+    description: "Schemalagda lektioner överförs till en applikation för närvarohantering eller visning av bokade tider."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?owner={organisation_id}"
+        expectedSchema: Group
+      # Step 4: Fetch activities
+      - name: "Fetch activities"
+        method: GET
+        endpoint: "/activities?organisation={organisation_id}"
+        expectedSchema: Activity
+      # Step 5: Fetch calendar events
+      - name: "Fetch calendar events"
+        method: GET
+        endpoint: "/calendarEvents?organisation={organisation_id}"
+        expectedSchema: CalendarEvent
+      # Step 6: Fetch rooms
+      - name: "Fetch rooms"
+        method: GET
+        endpoint: "/rooms?organisation={organisation_id}"
+        expectedSchema: Room
+      # Step 7: Fetch resources
+      - name: "Fetch resources"
+        method: GET
+        endpoint: "/resources?organisation={organisation_id}"
+        expectedSchema: Resource
+      # Step 8: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c14:
+    name: "C.14 Visning av studieplan för elev"
+    description: "Underlag för elevens individuella studieplaner kan registreras i ett system och visas grafiskt för elever och vårdnadshavare i ett annat system."
+
+    # Vi behöver ett person-ID och ett program-ID här. Inte helt hundra vad som är bästa sättet att göra detta test på.
+
+    steps:
+      # Step 1: Fetch persons, using the extracted organisation_id from step 0
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons/{student_id}"
+        expectedSchema: Person
+      # Step 2: Fetch programmes
+      - name: "Fetch programmes"
+        method: GET
+        endpoint: "/programmes/{programme_id}"
+        expectedSchema: Programme
+      # Step 4: Fetch study plans
+      - name: "Fetch study plans"
+        method: GET
+        endpoint: "/studyPlans?&student={student_id}"
+        expectedSchema: StudyPlan
+      # Step 5: Post lookup syllabuses
+      - name: "Fetch syllabuses via lookup"
+        method: POST
+        endpoint: "/syllabuses/lookup"
+        expectedSchema: Syllabus
+
+  c15:
+    name: "C.15 Studieplan som underlag för betygsutskrift"
+    description: "Elevers individuella studieplaner innehåller information om alla kurser och ämnen som en elev ska få betyg i. Denna information i kombination med uppgifter om elevens inskrivning och registrerade betyg ger underlag för utskrift av betygsdokument."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.entity.type=enrolment&relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?organisation={organisation_id}"
+        expectedSchema: Group
+      # Step 4: Fetch programmes
+      - name: "Fetch programmes"
+        method: GET
+        endpoint: "/programmes?organisation={organisation_id}"
+        expectedSchema: Programme
+      # Step 5: Fetch syllabuses
+      - name: "Fetch syllabuses"
+        method: GET
+        endpoint: "/syllabuses"
+        expectedSchema: Syllabus
+      # Step 6: Fetch study plans
+      - name: "Fetch study plans"
+        method: GET
+        endpoint: "/studyPlans?&organisation={organisation_id}"
+        expectedSchema: StudyPlan
+      # Step 7: Fetch grades
+      - name: "Fetch grades"
+        method: GET
+        endpoint: "/grades"
+        expectedSchema: Grade
+      # Step 8: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c16:
+    name: "C.16 Elevers inskrivning"
+    description: "Uppgifter om vilka elever som hör till olika skolor överförs från ett system där inskrivning och placerings sker."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.entity.type=enrolment&relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?organisation={organisation_id}"
+        expectedSchema: Group
+      # Step 4: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c17:
+    name: "C.17 Placering inom barnomsorg"
+    description: "Efter att vårdnadshavare har ansökt om och beviljats barnomsorg görs en placering av barnet på en enhet."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.entity.type=placement.child&relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch placements
+      - name: "Fetch placements"
+        method: GET
+        endpoint: "/placements?organisation={organisation_id}"
+        expectedSchema: Placement
+      # Step 4: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c18:
+    name: "C.18 Kontaktuppgifter för personer"
+    description: "Kontaktuppgifter för personer innefattar information om adress, telefonnummer, e-postadress och personidentifierare med formatet av en e-postadress."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+
+  c19:
+    name: "C.19 Underlag för planering av undervisning."
+    description: "Den information som finns i form av aktiviteter och schemahändelser används som underlag för planering."
+
+    steps:
+      # Step 1: Fetch organisations
+      - name: "Fetch organisations"
+        method: GET
+        endpoint: /organisations
+        expectedSchema: Organisation
+        extractData:
+          organisation_id: "data[0].id"
+      # Step 2: Fetch persons, using the extracted organisation_id from step 1
+      - name: "Fetch persons by organisation"
+        method: GET
+        endpoint: "/persons?relationship.organisation={organisation_id}"
+        expectedSchema: Person
+      # Step 3: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups?organisation={organisation_id}"
+        expectedSchema: Group
+      # Step 4: Fetch syllabuses
+      - name: "Fetch syllabuses"
+        method: GET
+        endpoint: "/syllabuses"
+        expectedSchema: Syllabus
+      # Step 5: Fetch activities
+      - name: "Fetch activities"
+        method: GET
+        endpoint: "/activities?organisation={organisation_id}"
+        expectedSchema: Activity
+      # Step 6: Fetch calendar events
+      - name: "Fetch calendar events"
+        method: GET
+        endpoint: "/calendarEvents?organisation={organisation_id}"
+        expectedSchema: CalendarEvent
+      # Step 7: Post Subscriptions
+      - name: "Post Subscriptions"
+        method: POST
+        endpoint: "/subscriptions"
+        expectedSchema: Subscription
+
+  c20:
+    name: "C.20 Underlag för mentorsaktiviteter."
+    description: "Scenariot bygger på att mentorn har loggat in. Systemet hämtar personen och expanderar så att även duties kommer med direkt i person-anropet."
+
+    # Det behövs ett eduPrincipalName här
+
+    steps:
+      # Step 1: Fetch person
+      - name: "Fetch person"
+        method: GET
+        endpoint: "/persons?eduPrincipalName={edu_principal_name}&expand=duties"
+        expectedSchema: Person
+      # Step 2: Fetch groups
+      - name: "Fetch groups"
+        method: GET
+        endpoint: "/groups"
+        expectedSchema: Group
+
+
+# Notes:
+# - All endpoints are relative to the base API URL provided in the form
+# - expectedSchema values should match OpenAPI component names (e.g., "Organisation", "Person")
+# - JSONPath expressions are used for data extraction (see https://pypi.org/project/jsonpath-ng/)
+# - Variables extracted from one step can be used in subsequent steps
+# - If validation fails at any step, the scenario stops and returns the error
